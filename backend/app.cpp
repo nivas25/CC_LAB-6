@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <string>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -38,19 +39,23 @@ int main() {
     std::cout << "Server listening on port 8080 (hostname: " << hostname << ")" << std::endl;
     
     // Accept connections in loop
-    // Accept connections in loop
     while(true) {
         int client_fd = accept(server_fd, NULL, NULL);
         if (client_fd < 0) continue;
         
-        // Simple HTTP response
+        // CRITICAL FIX: Read the incoming request so the OS doesn't reset the connection!
+        char buffer[1024] = {0};
+        read(client_fd, buffer, 1024);
+        
+        // Proper HTTP response with Content-Length
+        std::string body = "Served by backend: " + std::string(hostname) + "\n";
         std::string response = "HTTP/1.1 200 OK\r\n";
         response += "Content-Type: text/plain\r\n";
+        response += "Content-Length: " + std::to_string(body.length()) + "\r\n";
         response += "Connection: close\r\n\r\n";
-        response += "Served by backend: " + std::string(hostname) + "\n";
+        response += body;
         
         send(client_fd, response.c_str(), response.length(), 0);
-        usleep(10000); // <-- ADD THIS LINE (wait 10 milliseconds)
         close(client_fd);
     }
     
