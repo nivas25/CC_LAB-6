@@ -38,6 +38,7 @@ int main() {
     std::cout << "Server listening on port 8080 (hostname: " << hostname << ")" << std::endl;
     
     // Accept connections in loop
+    // Accept connections in loop
     while(true) {
         int client_fd = accept(server_fd, NULL, NULL);
         if (client_fd < 0) continue;
@@ -49,6 +50,7 @@ int main() {
         response += "Served by backend: " + std::string(hostname) + "\n";
         
         send(client_fd, response.c_str(), response.length(), 0);
+        usleep(10000); // <-- ADD THIS LINE (wait 10 milliseconds)
         close(client_fd);
     }
     
